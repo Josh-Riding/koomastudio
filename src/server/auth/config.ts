@@ -44,7 +44,7 @@ export const authConfig = {
     DiscordProvider,
     ResendProvider({
       from: process.env.LOGIN_EMAIL,
-      sendVerificationRequest,
+      // sendVerificationRequest,
     }),
     Google,
     /**
