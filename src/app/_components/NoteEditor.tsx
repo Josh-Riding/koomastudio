@@ -27,10 +27,8 @@ export default function NoteEditor({ id }: { id: number }) {
   const handlePost = async () => {
     try {
       await editMutation.mutateAsync({ id, draft_name: draftName, draft });
-      await navigator.clipboard.writeText(draft);
-      window.open("https://www.linkedin.com/feed/", "_blank");
     } catch (err) {
-      console.error("Failed to handle posting", err);
+      console.error("Failed to handle saving while posting", err);
     }
   };
 
@@ -73,9 +71,17 @@ export default function NoteEditor({ id }: { id: number }) {
     setShowModal(true);
   };
 
-  const handleModalClick = async () => {
+  const handleModalClick = () => {
     setShowModal(false);
-    await handlePost();
+    navigator.clipboard
+      .writeText(draft)
+      .then(() => {
+        window.open("https://www.linkedin.com/feed/", "_blank");
+      })
+      .catch((err) => {
+        console.error("Failed to copy to clipboard", err);
+      });
+    void handlePost();
   };
 
   if (isLoading) return <p>Loading...</p>;
