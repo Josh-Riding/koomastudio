@@ -10,14 +10,14 @@ export default function NewNoteEditor() {
   const utils = api.useUtils();
   const createMutation = api.notes.create.useMutation({
     onSuccess: () => {
-      utils.notes.getAll.invalidate();
+      void utils.notes.getAll.invalidate();
       router.push("/notes");
     },
   });
 
   const handleSave = async () => {
     try {
-      createMutation.mutateAsync({ draft_name: draftName, draft });
+      await createMutation.mutateAsync({ draft_name: draftName, draft });
     } catch (err) {
       console.error("Failed to save", err);
     }

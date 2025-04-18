@@ -36,14 +36,14 @@ export default function NoteEditor({ id }: { id: number }) {
 
   const editMutation = api.notes.edit.useMutation({
     onSuccess: () => {
-      utils.notes.getAll.invalidate();
+      void utils.notes.getAll.invalidate();
       router.push("/notes");
     },
   });
 
   const deleteMutation = api.notes.deleteById.useMutation({
     onSuccess: () => {
-      utils.notes.getAll.invalidate();
+      void utils.notes.getAll.invalidate();
       router.push("/notes");
     },
   });
