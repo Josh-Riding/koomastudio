@@ -15,8 +15,12 @@ export default function NewNoteEditor() {
     },
   });
 
-  const handleSave = () => {
-    createMutation.mutate({ draft_name: draftName, draft });
+  const handleSave = async () => {
+    try {
+      createMutation.mutateAsync({ draft_name: draftName, draft });
+    } catch (err) {
+      console.error("Failed to save", err);
+    }
   };
 
   const handleCancel = () => {

@@ -30,7 +30,7 @@ export default function NoteEditor({ id }: { id: number }) {
       await navigator.clipboard.writeText(draft);
       window.open("https://www.linkedin.com/feed/", "_blank");
     } catch (err) {
-      console.error("Failed to post", err);
+      console.error("Failed to handle posting", err);
     }
   };
 
@@ -48,26 +48,34 @@ export default function NoteEditor({ id }: { id: number }) {
     },
   });
 
-  const handleSave = () => {
-    editMutation.mutate({ id, draft_name: draftName, draft });
+  const handleSave = async () => {
+    try {
+      await editMutation.mutateAsync({ id, draft_name: draftName, draft });
+    } catch (error) {
+      console.error("Failed to save", error);
+    }
   };
 
-  const handleDelete = () => {
-    deleteMutation.mutate({ id });
+  const handleDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync({ id });
+    } catch (error) {
+      console.error("Failed to delete", error);
+    }
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     setConfirming(false);
-    handleDelete();
+    await handleDelete();
   };
 
   const handlePostClick = () => {
     setShowModal(true);
   };
 
-  const handleModalClick = () => {
+  const handleModalClick = async () => {
     setShowModal(false);
-    handlePost();
+    await handlePost();
   };
 
   if (isLoading) return <p>Loading...</p>;

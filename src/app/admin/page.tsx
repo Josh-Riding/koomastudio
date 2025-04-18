@@ -7,8 +7,6 @@ import React, { Suspense } from "react";
 import { eq, count, desc } from "drizzle-orm";
 import ClientDashboardToggle from "../_components/ClientDasbhoardToggle";
 
-const NotesChart = React.lazy(() => import("../_components/NotesChart"));
-
 export default async function AdminPage() {
   const session = await auth();
 

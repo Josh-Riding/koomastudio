@@ -79,7 +79,7 @@ export const notifyRouter = createTRPCRouter({
 
       await resend.emails.send({
         from: `koomastudio <${process.env.NOTIFY_EMAIL}>`,
-        to: process.env.NOTIFICATIONS_EMAIL_KOOMA as string,
+        to: process.env.NOTIFICATIONS_EMAIL_KOOMA!,
         subject: "Another person is interested in AI",
         text: `${input.email} wants to know when the feature goes live.`,
       });

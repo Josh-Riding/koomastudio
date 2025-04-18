@@ -16,26 +16,24 @@ const aiFeatures = [
 
 export default function AIPage() {
   const { data: session, status } = useSession();
-
-  if (status === "loading") return null;
-  if (!session) redirect("/signin");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
-
-  const handleClick = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEmail("");
-  };
 
   const notify = api.notify.email.useMutation({
     onSuccess: () => {
       closeModal();
     },
   });
+
+  if (status === "loading") return null;
+  if (!session) redirect("/signin");
+
+  const handleClick = () => setIsModalOpen(true);
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEmail("");
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

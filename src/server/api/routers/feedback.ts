@@ -18,7 +18,7 @@ export const feedbackRouter = createTRPCRouter({
 
       await resend.emails.send({
         from: `Feedback Form <${process.env.FEEDBACK_EMAIL}>`,
-        to: process.env.NOTIFICATIONS_EMAIL_KOOMA as string,
+        to: process.env.NOTIFICATIONS_EMAIL_KOOMA!,
         subject: "New Contact Form Submission",
         text: `From: ${input.name} <${input.email}>\n\n${input.message}`,
       });

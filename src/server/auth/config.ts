@@ -3,7 +3,7 @@ import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import ResendProvider from "next-auth/providers/resend";
 import Google from "next-auth/providers/google";
-import { sendVerificationRequest } from "@/lib/authSendRequest";
+// import { sendVerificationRequest } from "@/lib/authSendRequest";
 
 import { db } from "@/server/db";
 import {

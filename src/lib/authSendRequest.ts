@@ -1,4 +1,5 @@
 import { magicLinkHtml } from "./createHtml";
+
 type SendVerificationRequestParams = {
   identifier: string;
   url: string;
@@ -11,9 +12,10 @@ type SendVerificationRequestParams = {
 export async function sendVerificationRequest({
   identifier: email,
   url,
-  provider,
+  provider: _provider,
 }: SendVerificationRequestParams) {
   const { host } = new URL(url);
+
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -30,7 +32,7 @@ export async function sendVerificationRequest({
   });
 
   if (!res.ok) {
-    const errorData = await res.json();
+    const errorData: unknown = await res.json();
     throw new Error("Resend error: " + JSON.stringify(errorData));
   }
 }

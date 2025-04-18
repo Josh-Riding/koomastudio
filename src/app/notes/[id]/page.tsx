@@ -6,12 +6,12 @@ import { redirect } from "next/navigation";
 
 export default function EditNote() {
   const { data: session, status } = useSession();
+  const { id } = useParams(); // ✅ now safe
+  const idNum = Number(id);
 
   if (status === "loading") return null;
   if (!session) redirect("/signin");
 
-  const { id } = useParams();
-  const idNum = Number(id);
   return (
     <SessionProvider>
       <div>

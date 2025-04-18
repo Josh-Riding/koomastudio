@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getProviders, signIn } from "next-auth/react";
-import { ClientSafeProvider } from "node_modules/next-auth/lib/client";
+import type { ClientSafeProvider } from "node_modules/next-auth/lib/client";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -12,9 +12,11 @@ export default function SignInPage() {
   >({});
 
   useEffect(() => {
-    getProviders().then((res) => {
-      if (res) setProviders(res);
-    });
+    getProviders()
+      .then((res) => {
+        if (res) setProviders(res);
+      })
+      .catch(console.error);
   }, []);
 
   const googleProvider = Object.values(providers).find(
@@ -67,7 +69,7 @@ export default function SignInPage() {
               required
             />
             <p className="text-sm text-gray-500">
-              We'll email you a one-time link to sign in. No password needed.
+              We’ll email you a one-time link to sign in. No password needed.
             </p>
             <button
               type="submit"

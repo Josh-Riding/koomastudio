@@ -12,7 +12,7 @@ export default function NoteList() {
     return (
       <div className="mx-auto max-w-2xl space-y-6 p-6">
         <h2 className="text-3xl font-bold text-indigo-700">Your Drafts</h2>
-        {[...Array(3)].map((_, i) => (
+        {[...Array(3).keys()].map((i) => (
           <div
             key={i}
             className="rounded-xl border-2 border-gray-200 bg-white p-5 shadow-lg transition-shadow"

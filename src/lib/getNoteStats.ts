@@ -1,7 +1,7 @@
 // lib/getNoteStats.ts
 import { db } from "@/server/db";
 import { notes } from "@/server/db/schema";
-import { asc, desc, sql } from "drizzle-orm";
+import { asc, sql } from "drizzle-orm";
 
 export async function getNoteStats() {
   const created = await db
