@@ -2,6 +2,8 @@ import { HydrateClient } from "@/trpc/server";
 import { auth } from "@/server/auth";
 import Link from "next/link";
 import VisualTourCarousel from "./_components/VisualTourCarousel";
+import VideoSection from "./_components/VideoSection";
+import ScrollChevron from "./_components/ScrollChevron";
 
 export default async function landingPage() {
   const session = await auth();
@@ -25,22 +27,9 @@ export default async function landingPage() {
               {session ? "Go to Dashboard" : "Start Writing for Free"}
             </Link>
           </section>
-
+          <ScrollChevron />
           {/* How It Works */}
-          <section className="mt-24 w-full max-w-5xl text-center">
-            <h2 className="mb-6 text-3xl font-bold">See It In Action</h2>
-            <div className="relative w-full overflow-hidden rounded-xl shadow-lg">
-              <video
-                src="/videos/ksdemo.mp4"
-                className="h-auto w-full"
-                autoPlay
-                loop
-                muted
-                controls
-                playsInline
-              />
-            </div>
-          </section>
+          <VideoSection />
 
           {/* Features */}
           {/* Updated Features section here */}
