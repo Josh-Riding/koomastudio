@@ -39,14 +39,17 @@ export default function VideoSection() {
         }`}
       >
         <video
-          src="/videos/ksdemo.mp4"
           className="h-auto w-full"
           autoPlay
           loop
           muted
           controls
           playsInline
-        />
+        >
+          <source src="/videos/ksdemo.webm" type="video/webm" />
+          <source src="/videos/ksdemo.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       </div>
     </section>
   );
