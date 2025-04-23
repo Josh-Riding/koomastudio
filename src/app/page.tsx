@@ -1,6 +1,7 @@
 import { HydrateClient } from "@/trpc/server";
 import { auth } from "@/server/auth";
 import Link from "next/link";
+import VisualTourCarousel from "./_components/VisualTourCarousel";
 
 export default async function landingPage() {
   const session = await auth();
@@ -25,7 +26,21 @@ export default async function landingPage() {
             </Link>
           </section>
 
-          {/* Updated Hero section here */}
+          {/* How It Works */}
+          <section className="mt-24 w-full max-w-5xl text-center">
+            <h2 className="mb-6 text-3xl font-bold">See It In Action</h2>
+            <div className="relative w-full overflow-hidden rounded-xl shadow-lg">
+              <video
+                src="/videos/ksdemo.mp4"
+                className="h-auto w-full"
+                autoPlay
+                loop
+                muted
+                controls
+                playsInline
+              />
+            </div>
+          </section>
 
           {/* Features */}
           {/* Updated Features section here */}
@@ -65,6 +80,43 @@ export default async function landingPage() {
             <p className="mt-2 text-sm text-white/70">
               — Definitely not overreacting
             </p>
+          </section>
+          {/* Visual Tour */}
+          <VisualTourCarousel />
+
+          {/* FAQ */}
+          <section className="mt-24 w-full max-w-3xl text-left">
+            <h2 className="mb-8 text-center text-3xl font-bold">
+              Frequently Asked Questions
+            </h2>
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-lg font-semibold">Is this free?</h4>
+                <p className="opacity-80">
+                  Yes, the core tools are totally free. Paid features are also
+                  available to users looking for even more leverage with their
+                  LinkedIn strategy.
+                </p>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold">
+                  Can I use this without posting right away?
+                </h4>
+                <p className="opacity-80">
+                  Absolutely. You can draft, revise, and publish when you’re
+                  ready.
+                </p>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold">
+                  Is there a mobile version?
+                </h4>
+                <p className="opacity-80">
+                  We’re mobile-friendly in-browser! Use wherever and however you
+                  need it!
+                </p>
+              </div>
+            </div>
           </section>
         </div>
       </main>
