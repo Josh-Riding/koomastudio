@@ -54,4 +54,14 @@ export const notesRouter = createTRPCRouter({
 
       return { success: true };
     }),
+  archive: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(notes)
+        .set({ archive: true })
+        .where(eq(notes.id, input.id));
+
+      return { success: true };
+    }),
 });

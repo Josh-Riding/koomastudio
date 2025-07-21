@@ -8,6 +8,7 @@ import {
   timestamp,
   varchar,
   uuid,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
@@ -122,6 +123,8 @@ export const notes = createTable("notes", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
+  //new archive column here
+  archive: boolean("archive").notNull().default(false),
 });
 
 export const feedback = createTable("feedback", {
