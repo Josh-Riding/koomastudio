@@ -1,114 +1,65 @@
-import { HydrateClient } from "@/trpc/server";
 import { auth } from "@/server/auth";
 import Link from "next/link";
-import VisualTourCarousel from "./_components/VisualTourCarousel";
-import VideoSection from "./_components/VideoSection";
-import ScrollChevron from "./_components/ScrollChevron";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Repeat2, Library, Sparkles } from "lucide-react";
 
-export default async function landingPage() {
+export default async function LandingPage() {
   const session = await auth();
+
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="flex flex-col items-center justify-center px-6 py-16">
-          {/* Hero */}
-          <section className="max-w-3xl text-center">
-            <h2 className="text-5xl font-extrabold leading-tight sm:text-6xl">
-              Effortless LinkedIn Content, From Idea to Post
-            </h2>
-            <p className="mt-4 text-xl opacity-90">
-              Draft, organize, and publish standout content—all in one simple
-              tool designed for creators who care about consistency.
-            </p>
-            <Link
-              href={session ? "/notes" : "/api/auth/signin"}
-              className="mt-8 inline-block rounded-full bg-[hsl(280,100%,70%)] px-8 py-3 text-lg font-semibold text-white shadow-lg hover:bg-[hsl(280,100%,60%)]"
-            >
-              {session ? "Go to Dashboard" : "Start Writing for Free"}
+    <main className="flex min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center px-4">
+      {/* Hero */}
+      <section className="mx-auto max-w-2xl py-20 text-center">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          Remix LinkedIn content into your own voice
+        </h1>
+        <p className="mt-4 text-lg text-muted-foreground">
+          Save posts you admire, then use AI to remix them into original content
+          that sounds like you. Your personal LinkedIn content studio.
+        </p>
+        <div className="mt-8">
+          <Button asChild size="lg">
+            <Link href={session ? "/dashboard" : "/signin"}>
+              {session ? "Go to Dashboard" : "Get Started"}
             </Link>
-          </section>
-          <ScrollChevron />
-          {/* How It Works */}
-          <VideoSection />
-
-          {/* Features */}
-          {/* Updated Features section here */}
-          <div className="mt-16 grid w-full max-w-4xl grid-cols-1 gap-6 md:grid-cols-3">
-            <div className="rounded-2xl bg-white/10 p-6 shadow-lg transition hover:shadow-xl">
-              <h3 className="mb-2 text-2xl font-semibold">
-                💡 Save Ideas Instantly
-              </h3>
-              <p className="text-lg opacity-80">
-                Capture post ideas the moment they strike—no more lost
-                inspiration.
-              </p>
-            </div>
-            <div className="rounded-2xl bg-white/10 p-6 shadow-lg transition hover:shadow-xl">
-              <h3 className="mb-2 text-2xl font-semibold">📂 Stay Organized</h3>
-              <p className="text-lg opacity-80">
-                See all your posts at a glance by topic. No more looking through
-                unlabeled notes.
-              </p>
-            </div>
-            <div className="rounded-2xl bg-white/10 p-6 shadow-lg transition hover:shadow-xl">
-              <h3 className="mb-2 text-2xl font-semibold">
-                🚀 Polish & Publish
-              </h3>
-              <p className="text-lg opacity-80">
-                Edit and export with confidence—your next viral post is ready.
-              </p>
-            </div>
-          </div>
-
-          {/* Social Proof Placeholder */}
-          <section className="mt-16 max-w-3xl text-center opacity-80">
-            <p className="text-lg italic">
-              “Turns out LinkedIn doesn’t have drafts. So I built a whole
-              product instead.”
-            </p>
-            <p className="mt-2 text-sm text-white/70">
-              — Definitely not overreacting
-            </p>
-          </section>
-          {/* Visual Tour */}
-          <VisualTourCarousel />
-
-          {/* FAQ */}
-          <section className="mt-24 w-full max-w-3xl text-left">
-            <h2 className="mb-8 text-center text-3xl font-bold">
-              Frequently Asked Questions
-            </h2>
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-lg font-semibold">Is this free?</h4>
-                <p className="opacity-80">
-                  Yes, the core tools are totally free. Paid features are also
-                  available to users looking for even more leverage with their
-                  LinkedIn strategy.
-                </p>
-              </div>
-              <div>
-                <h4 className="text-lg font-semibold">
-                  Can I use this without posting right away?
-                </h4>
-                <p className="opacity-80">
-                  Absolutely. You can draft, revise, and publish when you’re
-                  ready.
-                </p>
-              </div>
-              <div>
-                <h4 className="text-lg font-semibold">
-                  Is there a mobile version?
-                </h4>
-                <p className="opacity-80">
-                  We’re mobile-friendly in-browser! Use wherever and however you
-                  need it!
-                </p>
-              </div>
-            </div>
-          </section>
+          </Button>
         </div>
-      </main>
-    </HydrateClient>
+      </section>
+
+      {/* Features */}
+      <section className="mx-auto grid w-full max-w-4xl gap-6 pb-20 md:grid-cols-3">
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 pt-6 text-center">
+            <Library className="h-8 w-8 text-muted-foreground" />
+            <h3 className="font-semibold">Save Posts</h3>
+            <p className="text-sm text-muted-foreground">
+              Build a library of LinkedIn posts that inspire you. Paste a URL or
+              the content directly.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 pt-6 text-center">
+            <Repeat2 className="h-8 w-8 text-muted-foreground" />
+            <h3 className="font-semibold">Remix with AI</h3>
+            <p className="text-sm text-muted-foreground">
+              Select posts as inspiration and let AI help you create original
+              content in your own style.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 pt-6 text-center">
+            <Sparkles className="h-8 w-8 text-muted-foreground" />
+            <h3 className="font-semibold">Publish Confidently</h3>
+            <p className="text-sm text-muted-foreground">
+              Edit, refine, and copy your remixed content. Ready to post on
+              LinkedIn whenever you are.
+            </p>
+          </CardContent>
+        </Card>
+      </section>
+    </main>
   );
 }

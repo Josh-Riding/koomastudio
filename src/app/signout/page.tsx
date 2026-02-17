@@ -1,25 +1,35 @@
 "use client";
 
 import { signOut } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function SignOutPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-indigo-50 p-4">
-      <div className="w-full max-w-md space-y-6 rounded-2xl bg-white p-8 text-center shadow-xl">
-        <h1 className="text-3xl font-extrabold text-indigo-700">
-          See you soon 👋
-        </h1>
-        <p className="text-lg text-gray-700">
-          Thanks for stopping by koomastudio!
-        </p>
-
-        <button
-          onClick={() => signOut({ callbackUrl: "/" })}
-          className="w-full rounded-xl bg-indigo-600 p-3 font-semibold text-white transition hover:bg-indigo-700"
-        >
-          Sign Out
-        </button>
-      </div>
+    <main className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center p-4">
+      <Card className="w-full max-w-md text-center">
+        <CardHeader>
+          <CardTitle className="text-2xl">See you soon</CardTitle>
+          <CardDescription>
+            Thanks for stopping by koomastudio!
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="w-full"
+            size="lg"
+          >
+            Sign Out
+          </Button>
+        </CardContent>
+      </Card>
     </main>
   );
 }

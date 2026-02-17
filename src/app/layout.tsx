@@ -4,12 +4,13 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "@/trpc/react";
-import Navbar from "./_components/Navbar";
 import { SessionProvider } from "next-auth/react";
+import Navbar from "@/components/nav/Navbar";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "koomastudio",
-  description: "An app for drafting LinkedIn Posts",
+  description: "Save LinkedIn posts you love, remix them into original content with AI",
   icons: [
     { rel: "icon", url: "/influence-icon.svg", type: "image/svg+xml" },
     { rel: "icon", url: "/influenceicon.png", type: "image/png" },
@@ -26,6 +27,7 @@ export default function RootLayout({
           <TRPCReactProvider>
             <Navbar />
             {children}
+            <Toaster />
           </TRPCReactProvider>
         </body>
       </html>
