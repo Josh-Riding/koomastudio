@@ -74,6 +74,45 @@ export const apiKeysRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  test: protectedProcedure
+    .input(z.object({ provider: z.enum(["anthropic", "openai"]) }))
+    .mutation(async ({ ctx, input }) => {
+      const key = await ctx.db.query.apiKeys.findFirst({
+        where: and(
+          eq(apiKeys.userId, ctx.session.user.id),
+          eq(apiKeys.provider, input.provider),
+        ),
+      });
+      if (!key) throw new Error("No key found");
+
+      const decryptedKey = decrypt(key.encryptedKey, getEncryptionKey());
+
+      try {
+        if (input.provider === "anthropic") {
+          const Anthropic = (await import("@anthropic-ai/sdk")).default;
+          const client = new Anthropic({ apiKey: decryptedKey });
+          await client.messages.create({
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 10,
+            messages: [{ role: "user", content: "Hi" }],
+          });
+          return { success: true, model: "claude-haiku-4-5-20251001" };
+        } else {
+          const OpenAI = (await import("openai")).default;
+          const client = new OpenAI({ apiKey: decryptedKey });
+          await client.chat.completions.create({
+            model: "gpt-4o-mini",
+            max_tokens: 10,
+            messages: [{ role: "user", content: "Hi" }],
+          });
+          return { success: true, model: "gpt-4o-mini" };
+        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Invalid key";
+        throw new Error(msg);
+      }
+    }),
+
   // Internal: get decrypted key for remix generation
   getDecrypted: protectedProcedure
     .input(z.object({ provider: z.enum(["anthropic", "openai"]) }))

@@ -14,8 +14,13 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Key, Trash2, Loader2 } from "lucide-react";
+import { Key, Trash2, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { api } from "@/trpc/react";
+
+const PROVIDER_MODELS: Record<string, string> = {
+  anthropic: "claude-sonnet-4-6",
+  openai: "gpt-4o",
+};
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -73,6 +78,9 @@ export default function SettingsPage() {
 function ApiKeyManager() {
   const [provider, setProvider] = useState<"anthropic" | "openai">("anthropic");
   const [keyValue, setKeyValue] = useState("");
+  const [testResults, setTestResults] = useState<
+    Record<string, "pending" | "ok" | "fail">
+  >({});
 
   const utils = api.useUtils();
   const { data: keys, isLoading } = api.apiKeys.list.useQuery();
@@ -88,6 +96,18 @@ function ApiKeyManager() {
     onSuccess: () => void utils.apiKeys.list.invalidate(),
   });
 
+  const testMutation = api.apiKeys.test.useMutation({
+    onMutate: ({ provider: p }) => {
+      setTestResults((prev) => ({ ...prev, [p]: "pending" }));
+    },
+    onSuccess: (_, { provider: p }) => {
+      setTestResults((prev) => ({ ...prev, [p]: "ok" }));
+    },
+    onError: (_, { provider: p }) => {
+      setTestResults((prev) => ({ ...prev, [p]: "fail" }));
+    },
+  });
+
   return (
     <div className="space-y-4">
       {/* Existing keys */}
@@ -99,19 +119,44 @@ function ApiKeyManager() {
           key={k.id}
           className="flex items-center justify-between rounded-lg border p-3"
         >
-          <div className="flex items-center gap-2">
-            <Key className="h-4 w-4 text-muted-foreground" />
-            <Badge variant="outline">{k.provider}</Badge>
-            <span className="text-sm text-muted-foreground">{k.keyHint}</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <Key className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <Badge variant="outline" className="shrink-0">{k.provider}</Badge>
+            <span className="text-sm text-muted-foreground shrink-0">{k.keyHint}</span>
+            <span className="text-xs text-muted-foreground truncate">
+              · {PROVIDER_MODELS[k.provider]}
+            </span>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => deleteMutation.mutate({ id: k.id })}
-            disabled={deleteMutation.isPending}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1 shrink-0 ml-2">
+            {testResults[k.provider] === "ok" && (
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+            )}
+            {testResults[k.provider] === "fail" && (
+              <XCircle className="h-4 w-4 text-destructive" />
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                testMutation.mutate({ provider: k.provider as "anthropic" | "openai" })
+              }
+              disabled={testResults[k.provider] === "pending"}
+            >
+              {testResults[k.provider] === "pending" ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                "Test"
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => deleteMutation.mutate({ id: k.id })}
+              disabled={deleteMutation.isPending}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       ))}
 
@@ -138,10 +183,13 @@ function ApiKeyManager() {
             className="flex-1"
           />
         </div>
+        <p className="text-xs text-muted-foreground">
+          Will use{" "}
+          <span className="font-medium">{PROVIDER_MODELS[provider]}</span> for
+          remixing.
+        </p>
         <Button
-          onClick={() =>
-            upsertMutation.mutate({ provider, key: keyValue })
-          }
+          onClick={() => upsertMutation.mutate({ provider, key: keyValue })}
           disabled={upsertMutation.isPending || !keyValue.trim()}
           size="sm"
         >
