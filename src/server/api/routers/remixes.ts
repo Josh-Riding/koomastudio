@@ -96,7 +96,7 @@ export const remixesRouter = createTRPCRouter({
     .input(
       z
         .object({
-          status: z.enum(["draft", "published", "archived"]).optional(),
+          status: z.enum(["draft", "published"]).optional(),
         })
         .optional(),
     )
@@ -136,7 +136,7 @@ export const remixesRouter = createTRPCRouter({
       z.object({
         id: z.string().uuid(),
         content: z.string().optional(),
-        status: z.enum(["draft", "published", "archived"]).optional(),
+        status: z.enum(["draft", "published"]).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

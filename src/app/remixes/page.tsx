@@ -19,7 +19,7 @@ import { api } from "@/trpc/react";
 export default function RemixesPage() {
   const { data: session, status } = useSession();
   const [statusFilter, setStatusFilter] = useState<
-    "draft" | "published" | "archived" | undefined
+    "draft" | "published" | undefined
   >();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -51,8 +51,8 @@ function RemixesList({
   copiedId,
   setCopiedId,
 }: {
-  statusFilter: "draft" | "published" | "archived" | undefined;
-  setStatusFilter: (s: "draft" | "published" | "archived" | undefined) => void;
+  statusFilter: "draft" | "published" | undefined;
+  setStatusFilter: (s: "draft" | "published" | undefined) => void;
   copiedId: string | null;
   setCopiedId: (id: string | null) => void;
 }) {
@@ -87,9 +87,7 @@ function RemixesList({
         defaultValue="all"
         onValueChange={(v) =>
           setStatusFilter(
-            v === "all"
-              ? undefined
-              : (v as "draft" | "published" | "archived"),
+            v === "all" ? undefined : (v as "draft" | "published"),
           )
         }
         className="mb-6"
@@ -98,7 +96,6 @@ function RemixesList({
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="draft">Drafts</TabsTrigger>
           <TabsTrigger value="published">Published</TabsTrigger>
-          <TabsTrigger value="archived">Archived</TabsTrigger>
         </TabsList>
       </Tabs>
 

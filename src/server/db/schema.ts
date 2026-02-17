@@ -245,6 +245,7 @@ export const remixes = createTable(
     content: text("content").notNull(),
     promptUsed: text("prompt_used"),
     status: varchar("status", { length: 20 })
+      .$type<"draft" | "published">()
       .notNull()
       .default("draft"),
     aiProvider: varchar("ai_provider", { length: 50 }),
