@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { useSearchParams, redirect } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,13 +16,47 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Key, Trash2, Loader2, CheckCircle2, XCircle, Copy, Check, AlertTriangle, Puzzle, UserCircle2 } from "lucide-react";
+import {
+  Key,
+  Trash2,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Copy,
+  Check,
+  AlertTriangle,
+  Puzzle,
+  UserCircle2,
+  Zap,
+  Lock,
+  CreditCard,
+  Calendar,
+} from "lucide-react";
 import { api } from "@/trpc/react";
 
 const PROVIDER_MODELS: Record<string, string> = {
   anthropic: "claude-sonnet-4-6",
   openai: "gpt-4o",
 };
+
+function UpgradeSuccessBanner() {
+  const searchParams = useSearchParams();
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("upgrade") === "success") setShow(true);
+  }, [searchParams]);
+
+  if (!show) return null;
+  return (
+    <div className="mb-6 rounded-lg border border-green-500/50 bg-green-500/10 p-4 flex items-center gap-3">
+      <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+      <p className="text-sm font-medium text-green-700 dark:text-green-400">
+        Welcome to Pro! Your subscription is now active.
+      </p>
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -41,6 +76,23 @@ export default function SettingsPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-8 text-2xl font-bold">Settings</h1>
+
+      <Suspense fallback={null}>
+        <UpgradeSuccessBanner />
+      </Suspense>
+
+      {/* Subscription */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Subscription
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SubscriptionManager />
+        </CardContent>
+      </Card>
 
       {/* Account */}
       <Card className="mb-6">
@@ -77,19 +129,8 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* API Keys */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>API Keys</CardTitle>
-          <CardDescription>
-            Bring your own API keys to use AI remixing. Keys are encrypted at
-            rest.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ApiKeyManager />
-        </CardContent>
-      </Card>
+      {/* API Keys (free users only) */}
+      <ApiKeySection />
 
       {/* Extension Tokens */}
       <Card>
@@ -99,8 +140,7 @@ export default function SettingsPage() {
             Chrome Extension
           </CardTitle>
           <CardDescription>
-            Generate tokens for the koomastudio Chrome extension. Tokens are
-            shown once and stored hashed — treat them like passwords.
+            Generate tokens for the koomastudio Chrome extension.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -111,13 +151,143 @@ export default function SettingsPage() {
   );
 }
 
+function SubscriptionManager() {
+  const [portalLoading, setPortalLoading] = useState(false);
+  const { data: sub, isLoading } = api.subscription.getStatus.useQuery();
+
+  if (isLoading) {
+    return <p className="text-sm text-muted-foreground">Loading...</p>;
+  }
+
+  async function handlePortal() {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = (await res.json()) as { url?: string };
+      if (data.url) window.location.href = data.url;
+    } finally {
+      setPortalLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div>
+            <p className="text-sm font-medium">Current plan</p>
+            {sub?.isPro ? (
+              <p className="text-xs text-muted-foreground">
+                {sub.isCancelled
+                  ? "Pro (cancelled)"
+                  : "Pro — renews monthly"}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {sub?.savesRemaining ?? 10} post saves remaining this month
+              </p>
+            )}
+          </div>
+        </div>
+        <Badge
+          variant={sub?.isPro ? "default" : "outline"}
+          className={
+            sub?.isPro
+              ? "bg-black text-white dark:bg-white dark:text-black"
+              : ""
+          }
+        >
+          {sub?.isPro ? "Pro" : "Free"}
+        </Badge>
+      </div>
+
+      {sub?.isPro && sub.subscriptionPeriodEnd && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Calendar className="h-3.5 w-3.5" />
+          {sub.isCancelled ? (
+            <span>
+              Access until{" "}
+              {new Date(sub.subscriptionPeriodEnd).toLocaleDateString()}
+            </span>
+          ) : (
+            <span>
+              Next renewal:{" "}
+              {new Date(sub.subscriptionPeriodEnd).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+      )}
+
+      {sub?.isPro ? (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handlePortal}
+          disabled={portalLoading}
+        >
+          {portalLoading && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+          Manage billing
+        </Button>
+      ) : (
+        <Button
+          size="sm"
+          className="bg-purple-600 hover:bg-purple-700 text-white"
+          asChild
+        >
+          <Link href="/pricing">
+            <Zap className="mr-2 h-3.5 w-3.5" />
+            Upgrade to Pro
+          </Link>
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function ApiKeySection() {
+  const { data: sub } = api.subscription.getStatus.useQuery();
+
+  if (sub?.isPro) {
+    return (
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>API Keys</CardTitle>
+          <CardDescription>
+            You&apos;re on Pro — koomastudio provides AI access. No API key
+            needed.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Remixes use our managed OpenAI key included with your subscription.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>API Keys</CardTitle>
+        <CardDescription>
+          Bring your own API keys to use AI remixing. Keys are encrypted at
+          rest.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ApiKeyManager />
+      </CardContent>
+    </Card>
+  );
+}
+
 function LinkedInContextManager() {
   const utils = api.useUtils();
   const { data, isLoading } = api.userProfile.getContext.useQuery();
   const [value, setValue] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  // Initialize local state from server once
   const displayValue = value ?? data?.linkedinContext ?? "";
 
   const updateMutation = api.userProfile.updateContext.useMutation({
@@ -163,6 +333,59 @@ function LinkedInContextManager() {
 }
 
 function ExtensionTokenManager() {
+  const { data: sub } = api.subscription.getStatus.useQuery();
+
+  if (!sub?.isPro) {
+    return (
+      <div className="relative">
+        {/* Blurred content behind overlay */}
+        <div className="pointer-events-none select-none blur-sm opacity-40">
+          <div className="space-y-4">
+            <div className="rounded-lg border p-3 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">My MacBook</p>
+                <p className="text-xs text-muted-foreground">Created Jan 1, 2025</p>
+              </div>
+              <div className="h-8 w-8 rounded bg-muted" />
+            </div>
+            <Separator />
+            <div className="flex gap-2">
+              <div className="flex-1 h-9 rounded-md bg-muted" />
+              <div className="h-9 w-32 rounded-md bg-muted" />
+            </div>
+          </div>
+        </div>
+
+        {/* Overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-lg">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black dark:bg-white">
+            <Lock className="h-5 w-5 text-white dark:text-black" />
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-semibold">Pro feature</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Upgrade to generate Chrome extension tokens.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+            asChild
+          >
+            <Link href="/pricing">
+              <Zap className="mr-2 h-3.5 w-3.5" />
+              Upgrade to Pro
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return <ExtensionTokenManagerInner />;
+}
+
+function ExtensionTokenManagerInner() {
   const [tokenName, setTokenName] = useState("");
   const [newToken, setNewToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -191,7 +414,6 @@ function ExtensionTokenManager() {
 
   return (
     <div className="space-y-4">
-      {/* New token warning */}
       {newToken && (
         <div className="rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-4 space-y-3">
           <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
@@ -223,7 +445,6 @@ function ExtensionTokenManager() {
         </div>
       )}
 
-      {/* Existing tokens */}
       {isLoading && (
         <p className="text-sm text-muted-foreground">Loading tokens...</p>
       )}
@@ -255,7 +476,6 @@ function ExtensionTokenManager() {
 
       <Separator />
 
-      {/* Generate new token */}
       <div className="flex gap-2">
         <Input
           placeholder="Token name (e.g. My MacBook)"
@@ -314,7 +534,6 @@ function ApiKeyManager() {
 
   return (
     <div className="space-y-4">
-      {/* Existing keys */}
       {isLoading && (
         <p className="text-sm text-muted-foreground">Loading keys...</p>
       )}
@@ -366,7 +585,6 @@ function ApiKeyManager() {
 
       <Separator />
 
-      {/* Add/update key */}
       <div className="space-y-3">
         <div className="flex gap-2">
           <select

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,10 +13,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Bookmark, Loader2, X, Check } from "lucide-react";
+import { Bookmark, Loader2, X, Check, Zap } from "lucide-react";
 import { api } from "@/trpc/react";
 
 export default function SavePostForm() {
+  const { data: sub } = api.subscription.getStatus.useQuery();
+  const atLimit = sub && !sub.isPro && sub.savesRemaining === 0;
+
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [content, setContent] = useState("");
@@ -35,6 +39,7 @@ export default function SavePostForm() {
   const saveMutation = api.savedPosts.save.useMutation({
     onSuccess: () => {
       void utils.savedPosts.getAll.invalidate();
+      void utils.subscription.getStatus.invalidate();
       resetForm();
       setOpen(false);
     },
@@ -111,17 +116,31 @@ export default function SavePostForm() {
   }
 
   return (
+    <div className="flex flex-col items-end gap-1.5">
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
       <DialogTrigger asChild>
-        <Button>
+        <Button
+          disabled={!!atLimit}
+          title={atLimit ? "Monthly save limit reached — upgrade to Pro for unlimited saves" : undefined}
+        >
           <Bookmark className="mr-2 h-4 w-4" />
-          Save Post
+          {atLimit ? "Save limit reached" : "Save Post"}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto overflow-x-hidden sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Save a LinkedIn Post</DialogTitle>
         </DialogHeader>
+        {!sub?.isPro && sub?.savesRemaining !== null && sub?.savesRemaining !== undefined && (
+          <div className={`flex items-center justify-between rounded-md px-3 py-2 text-xs ${atLimit ? "border border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400" : "bg-muted text-muted-foreground"}`}>
+            <span>{atLimit ? "Monthly save limit reached." : `${sub.savesRemaining} / ${sub.saveLimit} saves remaining this month`}</span>
+            {atLimit && (
+              <Link href="/pricing" className="font-semibold underline underline-offset-2 flex items-center gap-0.5 ml-2">
+                <Zap className="h-3 w-3" /> Upgrade
+              </Link>
+            )}
+          </div>
+        )}
         <div className="space-y-4">
           {/* URL / embed extraction */}
           {!content && !manualMode && (
@@ -257,5 +276,6 @@ export default function SavePostForm() {
         </div>
       </DialogContent>
     </Dialog>
+    </div>
   );
 }

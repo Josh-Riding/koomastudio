@@ -1,8 +1,10 @@
 import { randomBytes, createHash } from "crypto";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { extensionTokens } from "@/server/db/schema";
+import { extensionTokens, users } from "@/server/db/schema";
 import { eq, and } from "drizzle-orm";
+import { getEffectiveStatus } from "./subscription";
 
 function hashToken(raw: string): string {
   return createHash("sha256").update(raw).digest("hex");
@@ -12,6 +14,19 @@ export const extensionTokensRouter = createTRPCRouter({
   generate: protectedProcedure
     .input(z.object({ name: z.string().min(1).max(100) }))
     .mutation(async ({ ctx, input }) => {
+      // Pro only
+      const userRecord = await ctx.db.query.users.findFirst({
+        where: eq(users.id, ctx.session.user.id),
+        columns: { subscriptionStatus: true, subscriptionPeriodEnd: true },
+      });
+      if (!userRecord) throw new TRPCError({ code: "UNAUTHORIZED" });
+      if (getEffectiveStatus(userRecord) !== "pro") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Extension tokens require a Pro subscription.",
+        });
+      }
+
       const rawToken = "kst_" + randomBytes(32).toString("hex");
       const tokenHash = hashToken(rawToken);
 

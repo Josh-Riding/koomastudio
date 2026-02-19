@@ -2,8 +2,12 @@ import { createHash } from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/server/db";
-import { extensionTokens, posts, userSavedPosts } from "@/server/db/schema";
+import { extensionTokens, posts, userSavedPosts, users } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
+import { getEffectiveStatus } from "@/server/api/routers/subscription";
+
+const FREE_SAVE_LIMIT = 10;
+const WINDOW_DAYS = 30;
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -68,6 +72,24 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "Invalid token" },
       { status: 401, headers: CORS_HEADERS },
+    );
+  }
+
+  // Check user subscription (extension is Pro-only)
+  const userRecord = await db.query.users.findFirst({
+    where: eq(users.id, tokenRow.userId),
+    columns: {
+      subscriptionStatus: true,
+      subscriptionPeriodEnd: true,
+      postSaveCount: true,
+      postSaveWindowStart: true,
+    },
+  });
+
+  if (!userRecord || getEffectiveStatus(userRecord) !== "pro") {
+    return NextResponse.json(
+      { error: "Extension requires a Pro subscription." },
+      { status: 403, headers: CORS_HEADERS },
     );
   }
 

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { eq, and, desc, or } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -9,8 +10,13 @@ import {
   posts,
   userSavedPosts,
   savedPostsToCollections,
+  users,
 } from "@/server/db/schema";
 import { extractFromLinkedInInput } from "@/lib/extract-post";
+import { getEffectiveStatus } from "./subscription";
+
+const FREE_SAVE_LIMIT = 10;
+const WINDOW_DAYS = 30;
 
 export const savedPostsRouter = createTRPCRouter({
   extractFromUrl: publicProcedure
@@ -39,6 +45,51 @@ export const savedPostsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Check subscription + rate limit
+      const userRecord = await ctx.db.query.users.findFirst({
+        where: eq(users.id, ctx.session.user.id),
+        columns: {
+          subscriptionStatus: true,
+          subscriptionPeriodEnd: true,
+          postSaveCount: true,
+          postSaveWindowStart: true,
+        },
+      });
+      if (!userRecord) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+      const status = getEffectiveStatus(userRecord);
+
+      if (status === "free") {
+        const now = new Date();
+        let savesUsed = userRecord.postSaveCount ?? 0;
+        let windowStart = userRecord.postSaveWindowStart ?? now;
+
+        const windowExpiry = new Date(windowStart);
+        windowExpiry.setDate(windowExpiry.getDate() + WINDOW_DAYS);
+
+        if (now > windowExpiry) {
+          // Rolling window expired — reset
+          savesUsed = 0;
+          windowStart = now;
+        }
+
+        if (savesUsed >= FREE_SAVE_LIMIT) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `You've reached your ${FREE_SAVE_LIMIT} post saves for the month. Upgrade to Pro for unlimited saves.`,
+          });
+        }
+
+        // Increment counter
+        await ctx.db
+          .update(users)
+          .set({
+            postSaveCount: savesUsed + 1,
+            postSaveWindowStart: windowStart,
+          })
+          .where(eq(users.id, ctx.session.user.id));
+      }
+
       let postId: string;
 
       // Check if post already exists by URL

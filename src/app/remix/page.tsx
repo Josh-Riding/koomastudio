@@ -99,21 +99,23 @@ function RemixWorkspace({
 }) {
   const { data: savedPosts } = api.savedPosts.getAll.useQuery();
   const { data: keys } = api.apiKeys.list.useQuery();
+  const { data: sub } = api.subscription.getStatus.useQuery();
   const generateMutation = api.remixes.generate.useMutation({
     onSuccess: (data) => {
       if (data) setResult(data.content);
     },
   });
 
+  const isPro = sub?.isPro ?? false;
   const availableProviders = keys?.map((k) => k.provider) ?? [];
 
-  // Auto-select first available provider
+  // Auto-select first available provider (free users only)
   useEffect(() => {
-    if (keys !== undefined && availableProviders.length > 0 && !availableProviders.includes(provider)) {
+    if (!isPro && keys !== undefined && availableProviders.length > 0 && !availableProviders.includes(provider)) {
       setProvider(availableProviders[0] as "anthropic" | "openai");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keys]);
+  }, [keys, isPro]);
 
   function togglePost(id: string) {
     setSelectedIds(
@@ -191,7 +193,11 @@ function RemixWorkspace({
             rows={4}
             className="resize-none"
           />
-          {availableProviders.length > 0 ? (
+          {isPro ? (
+            <p className="text-xs text-muted-foreground">
+              Using managed OpenAI (GPT-4o) — included with Pro.
+            </p>
+          ) : availableProviders.length > 0 ? (
             <div className="flex items-center gap-3">
               <select
                 value={provider}
@@ -230,7 +236,7 @@ function RemixWorkspace({
               generateMutation.isPending ||
               selectedIds.length === 0 ||
               !prompt.trim() ||
-              !availableProviders.includes(provider)
+              (!isPro && !availableProviders.includes(provider))
             }
             className="w-full"
           >

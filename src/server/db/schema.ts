@@ -29,6 +29,23 @@ export const users = createTable("user", {
   image: varchar("image", { length: 255 }),
   role: text("role").default("USER").notNull(),
   linkedinContext: text("linkedin_context"),
+  // Subscription
+  subscriptionStatus: text("subscription_status")
+    .$type<"free" | "pro">()
+    .default("free")
+    .notNull(),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+  stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
+  subscriptionPeriodEnd: timestamp("subscription_period_end", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  // Post save rate limiting (rolling 30-day window)
+  postSaveCount: integer("post_save_count").default(0).notNull(),
+  postSaveWindowStart: timestamp("post_save_window_start", {
+    mode: "date",
+    withTimezone: true,
+  }),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({

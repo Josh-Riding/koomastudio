@@ -11,6 +11,7 @@ import {
 import { generateRemix } from "@/lib/ai/provider";
 import { decrypt } from "@/lib/encryption";
 import { env } from "@/env";
+import { getEffectiveStatus } from "./subscription";
 
 export const remixesRouter = createTRPCRouter({
   generate: protectedProcedure
@@ -22,28 +23,45 @@ export const remixesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Get API key
-      const apiKeyRecord = await ctx.db.query.apiKeys.findFirst({
-        where: and(
-          eq(apiKeys.userId, ctx.session.user.id),
-          eq(apiKeys.provider, input.provider),
-        ),
-      });
-      if (!apiKeyRecord) {
-        throw new Error(
-          `No ${input.provider} API key found. Add one in Settings.`,
-        );
-      }
-
-      const encryptionKey = env.ENCRYPTION_KEY;
-      if (!encryptionKey) throw new Error("ENCRYPTION_KEY not configured");
-      const decryptedKey = decrypt(apiKeyRecord.encryptedKey, encryptionKey);
-
-      // Get user's LinkedIn context
+      // Get user record for subscription + context
       const userRecord = await ctx.db.query.users.findFirst({
         where: eq(users.id, ctx.session.user.id),
-        columns: { linkedinContext: true },
+        columns: {
+          linkedinContext: true,
+          subscriptionStatus: true,
+          subscriptionPeriodEnd: true,
+        },
       });
+      if (!userRecord) throw new Error("User not found");
+
+      const isPro = getEffectiveStatus(userRecord) === "pro";
+
+      let decryptedKey: string;
+      let provider = input.provider;
+
+      if (isPro) {
+        // Pro: use managed OpenAI key
+        const managedKey = env.OPENAI_API_KEY;
+        if (!managedKey) throw new Error("Managed API key not configured");
+        decryptedKey = managedKey;
+        provider = "openai";
+      } else {
+        // Free: use BYOK
+        const apiKeyRecord = await ctx.db.query.apiKeys.findFirst({
+          where: and(
+            eq(apiKeys.userId, ctx.session.user.id),
+            eq(apiKeys.provider, input.provider),
+          ),
+        });
+        if (!apiKeyRecord) {
+          throw new Error(
+            `No ${input.provider} API key found. Add one in Settings.`,
+          );
+        }
+        const encryptionKey = env.ENCRYPTION_KEY;
+        if (!encryptionKey) throw new Error("ENCRYPTION_KEY not configured");
+        decryptedKey = decrypt(apiKeyRecord.encryptedKey, encryptionKey);
+      }
 
       // Get the saved posts with their content
       const savedPostRecords = await Promise.all(
@@ -68,8 +86,8 @@ export const remixesRouter = createTRPCRouter({
         })),
         prompt: input.prompt,
         apiKey: decryptedKey,
-        provider: input.provider,
-        userContext: userRecord?.linkedinContext,
+        provider,
+        userContext: userRecord.linkedinContext,
       });
 
       // Save the remix
@@ -80,7 +98,7 @@ export const remixesRouter = createTRPCRouter({
           content,
           promptUsed: input.prompt,
           status: "draft",
-          aiProvider: input.provider,
+          aiProvider: provider,
         })
         .returning();
 

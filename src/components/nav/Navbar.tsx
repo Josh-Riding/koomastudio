@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Menu, Sparkles, Library, Repeat2 } from "lucide-react";
+import { Menu, Sparkles, Library, Repeat2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -17,6 +17,7 @@ const navLinks = [
   { href: "/dashboard", label: "Library", icon: Library },
   { href: "/remix", label: "Remix", icon: Repeat2 },
   { href: "/remixes", label: "My Remixes", icon: Sparkles },
+  { href: "/pricing", label: "Pricing", icon: Zap },
 ];
 
 export default function Navbar() {
