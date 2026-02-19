@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { Library, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Library, Search, CheckSquare, X, Repeat2 } from "lucide-react";
 import SavePostForm from "@/components/saved-posts/SavePostForm";
 import PostCard from "@/components/saved-posts/PostCard";
 import { api } from "@/trpc/react";
@@ -47,6 +48,10 @@ function DashboardContent({
   activeTag: string | null;
   setActiveTag: (t: string | null) => void;
 }) {
+  const router = useRouter();
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
   const { data: savedPosts, isLoading } = api.savedPosts.getAll.useQuery(
     search ? { search } : undefined,
   );
@@ -68,11 +73,65 @@ function DashboardContent({
       ) ?? [])
     : (savedPosts ?? []);
 
+  function toggleSelection(id: string) {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.length === filtered.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filtered.map((p) => p.id));
+    }
+  }
+
+  function exitSelectionMode() {
+    setSelectionMode(false);
+    setSelectedIds([]);
+  }
+
+  function remixSelected() {
+    if (selectedIds.length === 0) return;
+    router.push(`/remix?postIds=${selectedIds.join(",")}`);
+  }
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
-      <div className="mb-8 flex items-center justify-between gap-4">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold">Your Library</h1>
-        <SavePostForm />
+        <div className="flex items-center gap-2">
+          {!selectionMode ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setSelectionMode(true)}
+              >
+                <CheckSquare className="mr-1 h-4 w-4" />
+                Select
+              </Button>
+              <SavePostForm />
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" onClick={toggleSelectAll}>
+                {selectedIds.length === filtered.length ? "Deselect All" : "Select All"}
+              </Button>
+              <Button
+                size="sm"
+                onClick={remixSelected}
+                disabled={selectedIds.length === 0}
+              >
+                <Repeat2 className="mr-1 h-4 w-4" />
+                Remix{selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={exitSelectionMode}>
+                <X className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Search */}
@@ -128,7 +187,13 @@ function DashboardContent({
       {filtered.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2">
           {filtered.map((savedPost) => (
-            <PostCard key={savedPost.id} savedPost={savedPost} />
+            <PostCard
+              key={savedPost.id}
+              savedPost={savedPost}
+              selectionMode={selectionMode}
+              selected={selectedIds.includes(savedPost.id)}
+              onToggle={toggleSelection}
+            />
           ))}
         </div>
       )}

@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Loader2, X, Check } from "lucide-react";
+import { Bookmark, Loader2, X, Check } from "lucide-react";
 import { api } from "@/trpc/react";
 
 export default function SavePostForm() {
@@ -114,7 +114,7 @@ export default function SavePostForm() {
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="mr-2 h-4 w-4" />
+          <Bookmark className="mr-2 h-4 w-4" />
           Save Post
         </Button>
       </DialogTrigger>

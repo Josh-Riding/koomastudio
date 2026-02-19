@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Copy, Check, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Copy, Check, Loader2, Save, ExternalLink } from "lucide-react";
 import { api } from "@/trpc/react";
 
 export default function RemixDetailPage() {
@@ -180,11 +180,23 @@ function RemixDetail({ id }: { id: string }) {
           <CardContent className="space-y-3">
             {remix.sources.map((source) => (
               <div key={source.postId} className="rounded-lg border p-3">
-                {source.post.authorName && (
-                  <p className="text-xs font-medium">
-                    {source.post.authorName}
-                  </p>
-                )}
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  {source.post.authorName && (
+                    <p className="text-xs font-medium">
+                      {source.post.authorName}
+                    </p>
+                  )}
+                  {source.post.postUrl && (
+                    <a
+                      href={source.post.postUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  )}
+                </div>
                 <p className="line-clamp-3 text-sm text-muted-foreground">
                   {source.post.content}
                 </p>
