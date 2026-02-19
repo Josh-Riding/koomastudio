@@ -28,6 +28,7 @@ export const users = createTable("user", {
   }).default(sql`CURRENT_TIMESTAMP`),
   image: varchar("image", { length: 255 }),
   role: text("role").default("USER").notNull(),
+  linkedinContext: text("linkedin_context"),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -36,6 +37,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   collections: many(collections),
   remixes: many(remixes),
   apiKeys: many(apiKeys),
+  extensionTokens: many(extensionTokens),
 }));
 
 export const accounts = createTable(
@@ -324,3 +326,33 @@ export const apiKeys = createTable(
 export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
   user: one(users, { fields: [apiKeys.userId], references: [users.id] }),
 }));
+
+// Extension tokens (for Chrome extension auth)
+export const extensionTokens = createTable(
+  "extension_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: varchar("token_hash", { length: 64 }).notNull().unique(),
+    name: varchar("name", { length: 100 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("extension_tokens_user_id_idx").on(table.userId),
+    tokenHashIdx: index("extension_tokens_token_hash_idx").on(table.tokenHash),
+  }),
+);
+
+export const extensionTokensRelations = relations(
+  extensionTokens,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [extensionTokens.userId],
+      references: [users.id],
+    }),
+  }),
+);

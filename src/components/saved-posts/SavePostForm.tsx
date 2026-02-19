@@ -70,14 +70,6 @@ export default function SavePostForm() {
         setPostUrl(result.data.postUrl);
         setEmbedUrl(result.data.embedUrl ?? null);
         setMediaType(result.data.mediaType ?? null);
-        // Auto-add media type tag
-        if (result.data.mediaType) {
-          setTags((prev) =>
-            prev.includes(result.data.mediaType!)
-              ? prev
-              : [...prev, result.data.mediaType!],
-          );
-        }
       } else {
         setPostUrl(url.trim());
         setManualMode(true);

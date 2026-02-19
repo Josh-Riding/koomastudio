@@ -26,7 +26,9 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        <Link href="/" className="text-lg font-bold">
+        <Link href="/" className="flex items-center gap-2 text-lg font-bold">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/wave.png" alt="" width={24} height={24} className="dark:invert" />
           koomastudio
         </Link>
 

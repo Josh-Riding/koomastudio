@@ -6,6 +6,7 @@ import {
   remixSources,
   userSavedPosts,
   apiKeys,
+  users,
 } from "@/server/db/schema";
 import { generateRemix } from "@/lib/ai/provider";
 import { decrypt } from "@/lib/encryption";
@@ -38,6 +39,12 @@ export const remixesRouter = createTRPCRouter({
       if (!encryptionKey) throw new Error("ENCRYPTION_KEY not configured");
       const decryptedKey = decrypt(apiKeyRecord.encryptedKey, encryptionKey);
 
+      // Get user's LinkedIn context
+      const userRecord = await ctx.db.query.users.findFirst({
+        where: eq(users.id, ctx.session.user.id),
+        columns: { linkedinContext: true },
+      });
+
       // Get the saved posts with their content
       const savedPostRecords = await Promise.all(
         input.savedPostIds.map((id) =>
@@ -62,6 +69,7 @@ export const remixesRouter = createTRPCRouter({
         prompt: input.prompt,
         apiKey: decryptedKey,
         provider: input.provider,
+        userContext: userRecord?.linkedinContext,
       });
 
       // Save the remix

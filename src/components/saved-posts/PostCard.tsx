@@ -44,7 +44,7 @@ export default function PostCard({ savedPost }: PostCardProps) {
     <Card className="overflow-hidden">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {post.authorName && (
               <p className="text-sm font-medium">{post.authorName}</p>
             )}
@@ -53,6 +53,11 @@ export default function PostCard({ savedPost }: PostCardProps) {
                 {post.mediaType}
               </Badge>
             )}
+            {savedPost.tags?.map((tag) => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">
@@ -96,15 +101,6 @@ export default function PostCard({ savedPost }: PostCardProps) {
           <p className="mt-2 text-xs italic text-muted-foreground">
             {savedPost.notes}
           </p>
-        )}
-        {(savedPost.tags?.length ?? 0) > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {savedPost.tags?.map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-          </div>
         )}
       </CardContent>
       <CardFooter className="gap-2">

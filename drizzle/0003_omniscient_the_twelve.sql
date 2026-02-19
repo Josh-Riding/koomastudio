@@ -1,0 +1,1 @@
+ALTER TABLE "t3tryouts_user" ADD COLUMN "linkedin_context" text;

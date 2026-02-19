@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Key, Trash2, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Key, Trash2, Loader2, CheckCircle2, XCircle, Copy, Check, AlertTriangle, Puzzle, UserCircle2 } from "lucide-react";
 import { api } from "@/trpc/react";
 
 const PROVIDER_MODELS: Record<string, string> = {
@@ -58,8 +59,26 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* LinkedIn Voice */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserCircle2 className="h-5 w-5" />
+            LinkedIn Voice
+          </CardTitle>
+          <CardDescription>
+            Describe your professional background, tone, and audience. This
+            context is automatically included with every remix so you don&apos;t
+            have to repeat yourself.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LinkedInContextManager />
+        </CardContent>
+      </Card>
+
       {/* API Keys */}
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>API Keys</CardTitle>
           <CardDescription>
@@ -71,7 +90,192 @@ export default function SettingsPage() {
           <ApiKeyManager />
         </CardContent>
       </Card>
+
+      {/* Extension Tokens */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Puzzle className="h-5 w-5" />
+            Chrome Extension
+          </CardTitle>
+          <CardDescription>
+            Generate tokens for the koomastudio Chrome extension. Tokens are
+            shown once and stored hashed — treat them like passwords.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ExtensionTokenManager />
+        </CardContent>
+      </Card>
     </main>
+  );
+}
+
+function LinkedInContextManager() {
+  const utils = api.useUtils();
+  const { data, isLoading } = api.userProfile.getContext.useQuery();
+  const [value, setValue] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  // Initialize local state from server once
+  const displayValue = value ?? data?.linkedinContext ?? "";
+
+  const updateMutation = api.userProfile.updateContext.useMutation({
+    onSuccess: () => {
+      void utils.userProfile.getContext.invalidate();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    },
+  });
+
+  if (isLoading) {
+    return <p className="text-sm text-muted-foreground">Loading...</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      <Textarea
+        placeholder={`e.g., "I'm a B2B SaaS founder focused on product-led growth. My audience is startup operators and PMs. I write in a direct, no-fluff style with occasional dry humor."`}
+        value={displayValue}
+        onChange={(e) => setValue(e.target.value)}
+        rows={5}
+        maxLength={2000}
+      />
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          {displayValue.length}/2000 characters
+        </p>
+        <Button
+          size="sm"
+          onClick={() => updateMutation.mutate({ linkedinContext: displayValue })}
+          disabled={updateMutation.isPending}
+        >
+          {updateMutation.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : saved ? (
+            <Check className="mr-2 h-4 w-4 text-green-600" />
+          ) : null}
+          {saved ? "Saved!" : "Save"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function ExtensionTokenManager() {
+  const [tokenName, setTokenName] = useState("");
+  const [newToken, setNewToken] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const utils = api.useUtils();
+  const { data: tokens, isLoading } = api.extensionTokens.list.useQuery();
+
+  const generateMutation = api.extensionTokens.generate.useMutation({
+    onSuccess: (data) => {
+      void utils.extensionTokens.list.invalidate();
+      setNewToken(data.token);
+      setTokenName("");
+    },
+  });
+
+  const revokeMutation = api.extensionTokens.revoke.useMutation({
+    onSuccess: () => void utils.extensionTokens.list.invalidate(),
+  });
+
+  function handleCopy() {
+    if (!newToken) return;
+    void navigator.clipboard.writeText(newToken);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* New token warning */}
+      {newToken && (
+        <div className="rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-4 space-y-3">
+          <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <p className="text-sm font-medium">
+              Copy this token now — it won&apos;t be shown again.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 rounded bg-muted px-3 py-2 text-xs font-mono break-all">
+              {newToken}
+            </code>
+            <Button variant="outline" size="sm" onClick={handleCopy}>
+              {copied ? (
+                <Check className="h-4 w-4 text-green-600" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground"
+            onClick={() => setNewToken(null)}
+          >
+            I&apos;ve copied it — dismiss
+          </Button>
+        </div>
+      )}
+
+      {/* Existing tokens */}
+      {isLoading && (
+        <p className="text-sm text-muted-foreground">Loading tokens...</p>
+      )}
+      {tokens?.map((t) => (
+        <div
+          key={t.id}
+          className="flex items-center justify-between rounded-lg border p-3"
+        >
+          <div className="min-w-0">
+            <p className="text-sm font-medium truncate">{t.name}</p>
+            <p className="text-xs text-muted-foreground">
+              Created {new Date(t.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => revokeMutation.mutate({ id: t.id })}
+            disabled={revokeMutation.isPending}
+            className="shrink-0 ml-2"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      {tokens?.length === 0 && !isLoading && (
+        <p className="text-sm text-muted-foreground">No tokens yet.</p>
+      )}
+
+      <Separator />
+
+      {/* Generate new token */}
+      <div className="flex gap-2">
+        <Input
+          placeholder="Token name (e.g. My MacBook)"
+          value={tokenName}
+          onChange={(e) => setTokenName(e.target.value)}
+          className="flex-1"
+        />
+        <Button
+          size="sm"
+          onClick={() => generateMutation.mutate({ name: tokenName })}
+          disabled={generateMutation.isPending || !tokenName.trim()}
+        >
+          {generateMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "Generate Token"
+          )}
+        </Button>
+      </div>
+    </div>
   );
 }
 

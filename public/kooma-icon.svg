@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Dark purple rounded square background -->
+  <rect width="32" height="32" rx="7" fill="#1e0a3c"/>
+
+  <!-- Wave body: C-shaped, barrel opens to the left -->
+  <path
+    d="M 6,27
+       C 12,28 21,26 26,20
+       C 31,14 30,6 25,3
+       C 20,-1 11,1 8,6
+       C 5,9 5,13 7,16
+       C 9,20 10,24 6,27 Z"
+    fill="#6d28d9"
+  />
+
+  <!-- Barrel hollow (background shows through) -->
+  <path
+    d="M 10,21
+       C 8,17 9,11 13,9
+       C 17,7 22,10 23,15
+       C 24,19 21,23 17,23
+       C 13,24 11,23 10,21 Z"
+    fill="#1e0a3c"
+  />
+
+  <!-- Outer crest / wave back highlight -->
+  <path
+    d="M 8,6 C 13,1 21,1 26,5 C 31,9 31,16 27,21"
+    stroke="#a78bfa"
+    stroke-width="1.5"
+    fill="none"
+    stroke-linecap="round"
+  />
+
+  <!-- Foam bumps at crest -->
+  <path
+    d="M 8,7 C 9,5 10,5 11,7 C 12,5 13,5 14,7 C 15,5 16,5 17,6"
+    stroke="#c4b5fd"
+    stroke-width="1.2"
+    fill="none"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Inner curl line (the inside face of the breaking crest) -->
+  <path
+    d="M 6,27 C 8,23 8,19 7,16 C 6,13 6,10 8,6"
+    stroke="#9333ea"
+    stroke-width="1"
+    fill="none"
+    stroke-linecap="round"
+    opacity="0.7"
+  />
+
+  <!-- Base sweep line 1 -->
+  <path
+    d="M 2,25 C 7,23 13,24 19,26"
+    stroke="#7c3aed"
+    stroke-width="1"
+    fill="none"
+    stroke-linecap="round"
+  />
+
+  <!-- Base sweep line 2 -->
+  <path
+    d="M 1,28 C 7,26 14,27 21,29"
+    stroke="#4c1d95"
+    stroke-width="1"
+    fill="none"
+    stroke-linecap="round"
+  />
+</svg>

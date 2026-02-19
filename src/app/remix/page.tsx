@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { redirect } from "next/navigation";
@@ -105,10 +105,12 @@ function RemixWorkspace({
   const availableProviders = keys?.map((k) => k.provider) ?? [];
 
   // Auto-select first available provider
-  const keysLoaded = keys !== undefined;
-  if (keysLoaded && availableProviders.length > 0 && !availableProviders.includes(provider)) {
-    setProvider(availableProviders[0] as "anthropic" | "openai");
-  }
+  useEffect(() => {
+    if (keys !== undefined && availableProviders.length > 0 && !availableProviders.includes(provider)) {
+      setProvider(availableProviders[0] as "anthropic" | "openai");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keys]);
 
   function togglePost(id: string) {
     setSelectedIds(

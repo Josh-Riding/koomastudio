@@ -4,6 +4,7 @@ export async function generateWithOpenAI(
   posts: { content: string; authorName: string | null }[],
   prompt: string,
   apiKey: string,
+  userContext?: string | null,
 ): Promise<string> {
   const client = new OpenAI({ apiKey });
 
@@ -14,18 +15,21 @@ export async function generateWithOpenAI(
     )
     .join("\n\n");
 
+  const contextSection = userContext?.trim()
+    ? `\nABOUT THE USER (their LinkedIn voice/background):\n${userContext.trim()}\n`
+    : "";
+
   const response = await client.chat.completions.create({
     model: "gpt-4o",
     messages: [
       {
         role: "system",
-        content:
-          "You are a LinkedIn content creator assistant. Help users remix LinkedIn posts into original content in their own voice. Output ONLY the post text, no meta-commentary.",
+        content: `You are a LinkedIn content creator assistant. Help users remix LinkedIn posts into original content in their own voice. Output ONLY the post text, no meta-commentary.${userContext?.trim() ? `\n\nAbout this user:\n${userContext.trim()}` : ""}`,
       },
       {
         role: "user",
         content: `Remix the following LinkedIn posts into original content.
-
+${contextSection}
 INSPIRATION POSTS:
 ${postsContext}
 

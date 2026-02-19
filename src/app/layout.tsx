@@ -12,8 +12,7 @@ export const metadata: Metadata = {
   title: "koomastudio",
   description: "Save LinkedIn posts you love, remix them into original content with AI",
   icons: [
-    { rel: "icon", url: "/influence-icon.svg", type: "image/svg+xml" },
-    { rel: "icon", url: "/influenceicon.png", type: "image/png" },
+    { rel: "icon", url: "/wave-favicon.png", type: "image/png" },
   ],
 };
 
