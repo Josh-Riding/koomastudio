@@ -20,12 +20,20 @@ export async function generateWithAnthropic(
     : "";
 
   const message = await client.messages.create({
-    model: "claude-sonnet-4-5-20250929",
+    model: "claude-sonnet-4-6",
     max_tokens: 1024,
     messages: [
       {
         role: "user",
         content: `You are a LinkedIn content creator assistant. The user wants to remix the following LinkedIn posts into original content in their own voice.
+
+FORMATTING RULES — follow these exactly:
+- Use single blank lines between sentences or short points (LinkedIn line breaks)
+- The opening hook gets its own line, always
+- Never write dense paragraphs — break after every 1-2 sentences or idea
+- No bullet points or markdown — plain text only
+- No hashtags unless the user asks
+- Output ONLY the post text, no commentary, no preamble
 ${contextSection}
 INSPIRATION POSTS:
 ${postsContext}
@@ -33,7 +41,7 @@ ${postsContext}
 USER INSTRUCTIONS:
 ${prompt}
 
-Write a new, original LinkedIn post inspired by the posts above. Follow the user's instructions. Do NOT copy — remix the ideas, structure, or tone into something fresh. Output ONLY the post text, no meta-commentary.`,
+Write a new, original LinkedIn post inspired by the posts above. Follow the user's instructions. Do NOT copy — remix the ideas, structure, or tone into something fresh. Use proper LinkedIn formatting with line breaks after every 1-2 sentences.`,
       },
     ],
   });

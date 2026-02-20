@@ -207,10 +207,10 @@ function RemixWorkspace({
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm sm:w-auto"
               >
                 {availableProviders.includes("anthropic") && (
-                  <option value="anthropic">Anthropic Claude</option>
+                  <option value="anthropic">Anthropic — claude-sonnet-4-6</option>
                 )}
                 {availableProviders.includes("openai") && (
-                  <option value="openai">OpenAI GPT-4o</option>
+                  <option value="openai">OpenAI — gpt-4o</option>
                 )}
               </select>
             </div>

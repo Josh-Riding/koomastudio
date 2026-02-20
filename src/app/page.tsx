@@ -56,7 +56,7 @@ export default async function LandingPage() {
       <section className="bg-white px-6 py-20">
         <div className="mx-auto max-w-5xl">
           <p className="mb-12 text-center text-sm font-semibold uppercase tracking-widest text-zinc-500">
-            Sound familiar?
+            Let's face it, you're here because...
           </p>
           <div className="grid gap-6 md:grid-cols-3">
             <Card>

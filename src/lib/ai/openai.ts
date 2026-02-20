@@ -24,7 +24,15 @@ export async function generateWithOpenAI(
     messages: [
       {
         role: "system",
-        content: `You are a LinkedIn content creator assistant. Help users remix LinkedIn posts into original content in their own voice. Output ONLY the post text, no meta-commentary.${userContext?.trim() ? `\n\nAbout this user:\n${userContext.trim()}` : ""}`,
+        content: `You are a LinkedIn content creator assistant. Help users remix LinkedIn posts into original content in their own voice.
+
+FORMATTING RULES — follow these exactly:
+- Use single blank lines between sentences or short points (LinkedIn line breaks)
+- The opening hook gets its own line, always
+- Never write dense paragraphs — break after every 1-2 sentences or idea
+- No bullet points or markdown — plain text only
+- No hashtags unless the user asks
+- Output ONLY the post text, no commentary, no preamble${userContext?.trim() ? `\n\nAbout this user:\n${userContext.trim()}` : ""}`,
       },
       {
         role: "user",
@@ -36,7 +44,7 @@ ${postsContext}
 USER INSTRUCTIONS:
 ${prompt}
 
-Write a new, original LinkedIn post inspired by the posts above. Do NOT copy — remix the ideas, structure, or tone into something fresh.`,
+Write a new, original LinkedIn post inspired by the posts above. Do NOT copy — remix the ideas, structure, or tone into something fresh. Use proper LinkedIn formatting with line breaks after every 1-2 sentences.`,
       },
     ],
   });
