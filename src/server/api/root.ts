@@ -6,6 +6,7 @@ import { remixesRouter } from "./routers/remixes";
 import { extensionTokensRouter } from "./routers/extension-tokens";
 import { userProfileRouter } from "./routers/user-profile";
 import { subscriptionRouter } from "./routers/subscription";
+import { supportRouter } from "./routers/support";
 
 export const appRouter = createTRPCRouter({
   savedPosts: savedPostsRouter,
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   extensionTokens: extensionTokensRouter,
   userProfile: userProfileRouter,
   subscription: subscriptionRouter,
+  support: supportRouter,
 });
 
 export type AppRouter = typeof appRouter;

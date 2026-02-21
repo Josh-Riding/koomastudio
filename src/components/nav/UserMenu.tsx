@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, LogOut } from "lucide-react";
+import { Settings, LogOut, LifeBuoy } from "lucide-react";
 import Link from "next/link";
 
 export default function UserMenu() {
@@ -41,6 +41,12 @@ export default function UserMenu() {
           <Link href="/settings">
             <Settings className="mr-2 h-4 w-4" />
             Settings
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/support">
+            <LifeBuoy className="mr-2 h-4 w-4" />
+            Support
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
